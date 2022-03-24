@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: 'Release version (example: 6.20.0)'
+        description: 'Release version:'
         required: true
         type: string
       base32_version:
@@ -23,6 +23,7 @@ jobs:
       GIT_TERMINAL_PROMPT: 0
       RELEASE_VERSION: ${{ github.event.inputs.release_version }}
       BASE32_VERSION: ${{ github.event.inputs.base32_version }}
+      IS_LTS: ${{ github.event.inputs.is_lts }}
 
     steps:
       - uses: actions/checkout@v3
@@ -37,11 +38,11 @@ jobs:
         with:
           script: |
             const { RELEASE_VERSION, BASE32_VERSION } = process.env
-            const validReleaseVersion = /^\d{1,2}\.\d{1,2}\.\d{1,2}$/.test(RELEASE_VERSION)
+            const validReleaseVersion = /^\d{1,2}\.\d{1,2}\.\d{1,2}(\-rc\.\d{1,2})?$/.test(RELEASE_VERSION)
             const validBase32 = /^[A-Z]{2}$/.test(BASE32_VERSION)
             
             if(!validReleaseVersion){
-              core.setFailed("Invalid release version, use format: major.minor.patch (6.20.0)");
+              core.setFailed("Invalid release version, use format: major.minor.patch(-rc.*) (6.20.0 / 6.20.0-rc.1)");
             }
             if(!validBase32){
               core.setFailed("Invalid base32 version, use two capital letters. Like: AA")
@@ -52,12 +53,16 @@ jobs:
           touch input-poc.txt
           echo release_version="$RELEASE_VERSION" >> input-poc.txt
           echo base32_version="$BASE32_VERSION" >> input-poc.txt
+          echo is_lts="$IS_LTS" >> input-poc.txt
           
       - name: Create release branch
         env:
           release_version: ${{ github.event.inputs.release_version }}
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+          # Check if branch already exists
+          # Add lts support
 
           git fetch origin
           git checkout -b release/$release_version
