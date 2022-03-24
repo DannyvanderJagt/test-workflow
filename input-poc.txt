@@ -1,0 +1,2 @@
+release_version=6.2.22
+base32_version=AA
