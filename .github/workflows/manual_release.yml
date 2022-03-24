@@ -1,0 +1,80 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version (example: 6.20.0)'
+        required: true
+        type: string
+      base32_version:
+        description: 'Base32 version'
+        required: true
+        type: string
+      is_lts:
+        description: 'LTS release'
+        required: true
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # - name: Validate
+      #   uses: actions/github-script@v6
+      #   env: 
+      #     release_version: ${{ github.event.inputs.release_version }}
+      #     base32_version: ${{ github.event.inputs.base32_version }}
+      #   with:
+      #     script: |
+      #       const { release_version, base32_version } = process.env
+      #       const validReleaseVersion = /^\d{1,2}\.\d{1,2}\.\d{1,2}$/.test(release_version)
+      #       const validBase32 = /^[A-Z]{2}$/.test(base32_version)
+            
+      #       if(!validReleaseVersion){
+      #         core.setFailed("Invalid release version, use format: major.minor.patch (6.20.0)");
+      #       }
+      #       if(!validBase32){
+      #         core.setFailed("Invalid base32 version, use two capital letters. Like: AA")
+      #       }
+
+      # - name: Create and populate PoC file
+      #   env: 
+      #     release_version: ${{ github.event.inputs.release_version }}
+      #     base32_version: ${{ github.event.inputs.base32_version }}
+      #   run: |
+      #     touch input-poc.txt
+      #     echo release_version="$AWS_HOST" >> .input-poc.txt
+      #     echo base32_version="$AWS_PORT" >> .input-poc.txt
+          
+      - name: Create release branch
+        run: >
+          git branch the-of-the-branch
+          git checkout the-of-the-branch
+          git status
+
+        
+
+
+
+      
+    # TODO: checkout branch and pull code
+
+    # TODO: Print inputs into file
+
+    # TODO: Create a release branch
+
+    # TODO: Push commit with the updated file
+
+
+      # - name: 
+      # - name: Print base32_version
+      #   run: echo base32_version ${{ github.events.inputs.base32_version }}
+      # - name: Print branch
+      #   run: echo branch ${{ github.events.inputs.branch }}
+      # - name: Print is_lts
+      #   run: echo is_lts ${{ github.events.inputs.is_lts }}
