@@ -21,26 +21,24 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GIT_TERMINAL_PROMPT: 0
+      RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+      BASE32_VERSION: ${{ github.event.inputs.base32_version }}
 
     steps:
+      - uses: actions/checkout@v3
+    
       - name: Reconfigure git to use HTTP authentication
         run: >
-          git config --global url."https://github.com/".insteadOf
+          git config --global --add url."https://github.com/".insteadOf
           ssh://git@github.com/
-
-      - name: Checkout
-        uses: actions/checkout@v3
 
       - name: Validate
         uses: actions/github-script@v6
-        env: 
-          release_version: ${{ github.event.inputs.release_version }}
-          base32_version: ${{ github.event.inputs.base32_version }}
         with:
           script: |
-            const { release_version, base32_version } = process.env
-            const validReleaseVersion = /^\d{1,2}\.\d{1,2}\.\d{1,2}$/.test(release_version)
-            const validBase32 = /^[A-Z]{2}$/.test(base32_version)
+            const { RELEASE_VERSION, BASE32_VERSION } = process.env
+            const validReleaseVersion = /^\d{1,2}\.\d{1,2}\.\d{1,2}$/.test(RELEASE_VERSION)
+            const validBase32 = /^[A-Z]{2}$/.test(BASE32_VERSION)
             
             if(!validReleaseVersion){
               core.setFailed("Invalid release version, use format: major.minor.patch (6.20.0)");
@@ -50,37 +48,26 @@ jobs:
             }
 
       - name: Create and populate PoC file
-        env: 
-          release_version: ${{ github.event.inputs.release_version }}
-          base32_version: ${{ github.event.inputs.base32_version }}
         run: |
           touch input-poc.txt
-          echo release_version="$AWS_HOST" >> input-poc.txt
-          echo base32_version="$AWS_PORT" >> input-poc.txt
+          echo release_version="$RELEASE_VERSION" >> input-poc.txt
+          echo base32_version="$BASE32_VERSION" >> input-poc.txt
           
       - name: Create release branch
         env:
           release_version: ${{ github.event.inputs.release_version }}
         run: |
-          # git remote -v
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
           git fetch origin
           git checkout -b release/$release_version
-          # git status
           git add input-poc.txt
 
           git config --global user.email "dannyvanderjagt@gmail.com"
           git config --global user.name "Danny van der Jagt (CI)"
 
           git commit -m "Add poc file"
-          git push release/$release_version
-          # git fetch
-          # git remote update
-          # git fetch
-          # git status
-
-        
-
-
+          git push origin release/$release_version
 
       
     # TODO: checkout branch and pull code
