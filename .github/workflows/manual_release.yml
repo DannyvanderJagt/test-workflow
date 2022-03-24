@@ -19,43 +19,64 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      GIT_TERMINAL_PROMPT: 0
 
     steps:
+      - name: Reconfigure git to use HTTP authentication
+        run: >
+          git config --global url."https://github.com/".insteadOf
+          ssh://git@github.com/
+
       - name: Checkout
         uses: actions/checkout@v3
 
-      # - name: Validate
-      #   uses: actions/github-script@v6
-      #   env: 
-      #     release_version: ${{ github.event.inputs.release_version }}
-      #     base32_version: ${{ github.event.inputs.base32_version }}
-      #   with:
-      #     script: |
-      #       const { release_version, base32_version } = process.env
-      #       const validReleaseVersion = /^\d{1,2}\.\d{1,2}\.\d{1,2}$/.test(release_version)
-      #       const validBase32 = /^[A-Z]{2}$/.test(base32_version)
+      - name: Validate
+        uses: actions/github-script@v6
+        env: 
+          release_version: ${{ github.event.inputs.release_version }}
+          base32_version: ${{ github.event.inputs.base32_version }}
+        with:
+          script: |
+            const { release_version, base32_version } = process.env
+            const validReleaseVersion = /^\d{1,2}\.\d{1,2}\.\d{1,2}$/.test(release_version)
+            const validBase32 = /^[A-Z]{2}$/.test(base32_version)
             
-      #       if(!validReleaseVersion){
-      #         core.setFailed("Invalid release version, use format: major.minor.patch (6.20.0)");
-      #       }
-      #       if(!validBase32){
-      #         core.setFailed("Invalid base32 version, use two capital letters. Like: AA")
-      #       }
+            if(!validReleaseVersion){
+              core.setFailed("Invalid release version, use format: major.minor.patch (6.20.0)");
+            }
+            if(!validBase32){
+              core.setFailed("Invalid base32 version, use two capital letters. Like: AA")
+            }
 
-      # - name: Create and populate PoC file
-      #   env: 
-      #     release_version: ${{ github.event.inputs.release_version }}
-      #     base32_version: ${{ github.event.inputs.base32_version }}
-      #   run: |
-      #     touch input-poc.txt
-      #     echo release_version="$AWS_HOST" >> .input-poc.txt
-      #     echo base32_version="$AWS_PORT" >> .input-poc.txt
+      - name: Create and populate PoC file
+        env: 
+          release_version: ${{ github.event.inputs.release_version }}
+          base32_version: ${{ github.event.inputs.base32_version }}
+        run: |
+          touch input-poc.txt
+          echo release_version="$AWS_HOST" >> input-poc.txt
+          echo base32_version="$AWS_PORT" >> input-poc.txt
           
       - name: Create release branch
-        run: >
-          git branch the-of-the-branch
-          git checkout the-of-the-branch
-          git status
+        env:
+          release_version: ${{ github.event.inputs.release_version }}
+        run: |
+          # git remote -v
+          git fetch origin
+          git checkout -b release/$release_version
+          # git status
+          git add input-poc.txt
+
+          git config --global user.email "dannyvanderjagt@gmail.com"
+          git config --global user.name "Danny van der Jagt (CI)"
+
+          git commit -m "Add poc file"
+          git push release/$release_version
+          # git fetch
+          # git remote update
+          # git fetch
+          # git status
 
         
 
