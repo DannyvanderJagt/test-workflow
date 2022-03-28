@@ -15,6 +15,7 @@ on:
         description: 'LTS release'
         required: true
         type: boolean
+        default: false
 
 jobs:
   deploy:
@@ -68,26 +69,16 @@ jobs:
           git checkout -b release/$release_version
           git add input-poc.txt
 
-          git config --global user.email "dannyvanderjagt@gmail.com"
-          git config --global user.name "Danny van der Jagt (CI)"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          echo "${{ github.actor }}"
+          echo "${{ github.actor }}@users.noreply.github.com"
 
           git commit -m "Add poc file"
           git push origin release/$release_version
 
-      
-    # TODO: checkout branch and pull code
-
-    # TODO: Print inputs into file
-
-    # TODO: Create a release branch
-
-    # TODO: Push commit with the updated file
-
-
-      # - name: 
-      # - name: Print base32_version
-      #   run: echo base32_version ${{ github.events.inputs.base32_version }}
-      # - name: Print branch
-      #   run: echo branch ${{ github.events.inputs.branch }}
-      # - name: Print is_lts
-      #   run: echo is_lts ${{ github.events.inputs.is_lts }}
+    # - name: Update changelog
+    #   uses: actions/github-script@v6
+    #   with:
+    #     script: |
+    #       const changelog = fs.readfile('CHANGELOG')

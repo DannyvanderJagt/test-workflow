@@ -1,7 +1,7 @@
 {
 
         "inputs": {
-            "release_version": "6.2.23-rc.1",
+            "release_version": "6.2.24-rc.1",
             "base32_version": "AA",
             "is_lts": false
         }
