@@ -7,3 +7,6 @@ is_lts=false
 release_version=1.0.4
 base32_version=AA
 is_lts=false
+release_version=1.0.4
+base32_version=AA
+is_lts=false
